@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import FeedCard from "./FeedCardComponent/FeedCardComponent";
 
@@ -12,14 +11,34 @@ class App extends React.Component {
       pageNo: 1,
       noResultFlag: false
     }
+
+    this.fetchFeedData = this.fetchFeedData.bind(this);
+    this.buttonDisableLogic = this.buttonDisableLogic.bind(this);
   }
 
   componentDidMount() {
-    this.fetchFeedData(this.state.pageNo)
+    this.fetchFeedData(this.state.pageNo);
+    this.buttonDisableLogic(this.state.pageNo)
+  }
+
+  buttonDisableLogic = (pageNo) => {
+    if (pageNo <= 1) {
+      let element = document.querySelector(".prevButton")
+      element.setAttribute("disabled", "disabled");
+    }
+    else if (pageNo >= 3) {
+      let element = document.querySelector(".nextButton")
+      element.setAttribute("disabled", "disabled");
+    }
+    else {
+      let element1 = document.querySelector(".prevButton")
+      element1.removeAttribute("disabled");
+      let element2 = document.querySelector(".nextButton")
+      element2.removeAttribute("disabled");
+    }
   }
 
   fetchFeedData = (pageNo) => {
-
     let pageLinkMap = {
       1: "59b3f0b0100000e30b236b7e",
       2: "59ac28a9100000ce0bf9c236",
@@ -36,10 +55,10 @@ class App extends React.Component {
 
     let feedID = pageLinkMapFilter(pageNo);
 
-    fetch(`http://www.mocky.io/v2/${feedID}`)
+    fetch(`http://www.mocky.io/v2/${feedID}`, { mode: 'cors' })
       .then(response => { return response.json() })
       .then(data => {
-        console.log("data is", data);
+        // console.log("data is", data);
         if (data) {
           this.setState({
             feedData: data.posts,
@@ -55,24 +74,34 @@ class App extends React.Component {
       })
   }
 
+  changePageHandler = (e) => {
+    let requestedPageNo = e.target.value;
+    this.setState({
+      pageNo: requestedPageNo
+    })
+    this.buttonDisableLogic(requestedPageNo);
+    this.fetchFeedData(requestedPageNo);
+
+  }
+
   render() {
-
     let feedData = this.state.feedData;
-
-
-
     return (
-      <div className="App" >
-        TEST SPACE
-        {feedData.map((obj) => {
+      <div className="App">
+        FEEDS PAGE - {this.state.pageNo}
+        <br></br>
+        <button type="button" className="prevButton" value={(this.state.pageNo) - 1} onClick={this.changePageHandler} > Prev </button>
+        <button type="button" className="nextButton" value={(this.state.pageNo) + 1} onClick={this.changePageHandler}> Next </button>
+        {feedData.map((obj, idx) => {
+          console.log()
           return (
-            <FeedCard
-              feedData={obj}
-            ></FeedCard>
+            <div key={idx}>
+              <FeedCard
+                feedData={obj}
+              ></FeedCard>
+            </div>
           )
         })}
-
-
       </div>
     );
   }
