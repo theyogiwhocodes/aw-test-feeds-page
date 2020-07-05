@@ -9,16 +9,33 @@ class App extends React.Component {
     this.state = {
       feedData: [],
       pageNo: 1,
-      noResultFlag: false
+      noResultFlag: true,
+      firstLoadFlag: true
     }
 
     this.fetchFeedData = this.fetchFeedData.bind(this);
     this.buttonDisableLogic = this.buttonDisableLogic.bind(this);
+    this.getDataHandler = this.getDataHandler.bind(this);
   }
 
+
+
   componentDidMount() {
+    this.setState({
+      firstLoadFlag: true
+    })
+    // this.fetchFeedData(this.state.pageNo);
+    // this.buttonDisableLogic(this.state.pageNo)
+  }
+
+  componentDidUpdate() {
+    if (this.state.firstLoadFlag === false)
+      this.buttonDisableLogic(this.state.pageNo);
+  }
+
+
+  getDataHandler = () => {
     this.fetchFeedData(this.state.pageNo);
-    this.buttonDisableLogic(this.state.pageNo)
   }
 
   buttonDisableLogic = (pageNo) => {
@@ -61,18 +78,31 @@ class App extends React.Component {
         // console.log("data is", data);
         if (data) {
           this.setState({
+            firstLoadFlag: false,
+            noResultFlag: false,
             feedData: data.posts,
             pageNo: data.page
           })
         }
         else {
           this.setState({
+            firstLoadFlag: false,
             noResultFlag: true,
-            feedData: data.posts,
+            feedData: []
           })
         }
       })
+      .catch(function (err) {
+        this.setState({
+          firstLoadFlag: false,
+          noResultFlag: true,
+          feedData: []
+        })
+        // alert("No data found !")
+      })
   }
+
+
 
   changePageHandler = (e) => {
     let requestedPageNo = e.target.value;
@@ -88,20 +118,37 @@ class App extends React.Component {
     let feedData = this.state.feedData;
     return (
       <div className="App">
-        FEEDS PAGE - {this.state.pageNo}
+        <h3>
+          YOUR FEEDS
+        </h3>
+        <button type="button" className="getData" onClick={this.getDataHandler}>GET DATA</button>
         <br></br>
-        <button type="button" className="prevButton" value={(this.state.pageNo) - 1} onClick={this.changePageHandler} > Prev </button>
-        <button type="button" className="nextButton" value={(this.state.pageNo) + 1} onClick={this.changePageHandler}> Next </button>
-        {feedData.map((obj, idx) => {
-          console.log()
-          return (
-            <div key={idx}>
-              <FeedCard
-                feedData={obj}
-              ></FeedCard>
-            </div>
-          )
-        })}
+        <hr></hr>
+
+        {this.state.noResultFlag === true ? "Nothing to show!" :
+          <div>
+            PAGE - {this.state.pageNo}
+            <br></br>
+            <br></br>
+            <button type="button" className="prevButton" value={(this.state.pageNo) - 1} onClick={this.changePageHandler} > Prev </button>
+            <button type="button" className="nextButton" value={(this.state.pageNo) + 1} onClick={this.changePageHandler}> Next </button>
+            {feedData.map((obj, idx) => {
+              console.log()
+              return (
+                <div key={idx}>
+                  <FeedCard
+                    feedData={obj}
+                  ></FeedCard>
+                </div>
+              )
+            })}
+          </div>
+        }
+        <br></br>
+        <br></br>
+        {
+          this.state.firstLoadFlag === true ? "Click on GET DATA to begin!" : ""
+        }
       </div>
     );
   }
