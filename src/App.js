@@ -72,7 +72,7 @@ class App extends React.Component {
 
     let feedID = pageLinkMapFilter(pageNo);
 
-    fetch(`http://www.mocky.io/v2/${feedID}`, { mode: 'cors' })
+    fetch(`https://www.mocky.io/v2/${feedID}`, { mode: 'cors' })
       .then(response => { return response.json() })
       .then(data => {
         // console.log("data is", data);
